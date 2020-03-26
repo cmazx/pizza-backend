@@ -61,7 +61,7 @@ class MenuPositionsTest extends TestCase
                     'price' => $position->price,
                     'description' => $position->description,
                     'position' => $position->position,
-                    'images' => 'http://localhost/images/' . $position->image . '.jpg',
+                    'image' => 'http://localhost/images/' . $position->image . '.jpg',
                     'options' => $options
                 ];
             })->toArray();
