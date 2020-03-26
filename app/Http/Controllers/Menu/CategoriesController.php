@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Menu;
 
 use App\Http\Controllers\Controller;
+use App\MenuCategory;
 
 class CategoriesController extends Controller
 {
@@ -17,7 +18,7 @@ class CategoriesController extends Controller
     }
 
     public function index(){
-        return [];
+        return MenuCategory::ordered()->get();
     }
 
 }
