@@ -1,5 +1,13 @@
 <?php
 
+//Heroku way configuration
+$dbUrl = getenv("DATABASE_URL");
+$dbUrlArray = parse_url($dbUrl);
+$host = $dbUrlArray["host"] ?? null;
+$username = $dbUrlArray["user"] ?? null;
+$password = $dbUrlArray["pass"] ?? null;
+$database = substr($dbUrlArray["path"], 1);
+
 return [
     'default' => env('DB_CONNECTION', 'pgsql'),
     'connections' => [
@@ -12,20 +20,18 @@ return [
         ],
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', 'postgres'),
+            'url' => $dbUrl ?:env('DATABASE_URL'),
+            'host' => $dbUrl ? $host :env('DB_HOST', 'postgres'),
             'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'pizzario'),
-            'username' => env('DB_USERNAME', 'pizzario'),
-            'password' => env('DB_PASSWORD', 'pizzario'),
+            'database' => $dbUrl ? $database : env('DB_DATABASE', 'pizzario'),
+            'username' => $dbUrl ? $username :env('DB_USERNAME', 'pizzario'),
+            'password' => $dbUrl ? $password : env('DB_PASSWORD', 'pizzario'),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
             'schema' => 'public',
             'sslmode' => 'prefer',
         ],
-
-
     ],
     'migrations' => 'migrations',
 ];
