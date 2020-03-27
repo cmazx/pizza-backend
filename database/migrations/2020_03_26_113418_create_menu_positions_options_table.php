@@ -27,11 +27,13 @@ class CreateMenuPositionsOptionsTable extends Migration
             $table->foreign('menu_position_id', 'menu_position_option_values_position_id_fk')
                 ->references('id')
                 ->on('menu_positions')
-                ->onDelete('CASCADE');
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
             $table->foreign('menu_position_option_id', 'menu_position_option_values_option_id_fk')
                 ->references('id')
                 ->on('menu_position_options')
-                ->onDelete('CASCADE');
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
         });
     }
 

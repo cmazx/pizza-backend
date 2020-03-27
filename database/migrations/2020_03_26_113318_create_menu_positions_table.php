@@ -25,7 +25,8 @@ class CreateMenuPositionsTable extends Migration
             $table->foreign('menu_category_id', 'menu_positions_menu_category_id_fk')
                 ->references('id')
                 ->on('menu_categories')
-                ->onDelete('CASCADE');
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
         });
     }
 
