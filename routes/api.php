@@ -15,3 +15,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/categories', 'Menu\CategoriesController@index');
 Route::get('/categories/{category}/positions', 'Menu\CategoriesController@positions');
+Route::post('/orders', 'Menu\OrderController@create');
