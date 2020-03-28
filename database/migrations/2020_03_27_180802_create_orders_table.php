@@ -23,7 +23,7 @@ class CreateOrdersTable extends Migration
             $table->time('updated_at');
             $table->time('created_at');
             $table->time('delivered_at')->nullable();
-            $table->enum('status', ['new', 'approved', 'delivered']);
+            $table->enum('status', ['new', 'approved', 'delivered', 'cancelled']);
 
             $table->foreign('user_id', 'orders_user_id_fk')
                 ->references('id')

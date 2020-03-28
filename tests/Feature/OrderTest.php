@@ -10,18 +10,24 @@ class OrderTest extends TestCase
 {
     use DatabaseMigrations;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        (new \MenuCategorySeeder())->run();
+    }
+
     /**
      * @param $requestData
      *
      * @dataProvider validationProvider
      */
-    public function testValidationError($requestData)
+    public function testCreateValidationError($requestData)
     {
-        (new \MenuCategorySeeder())->run();
         $status = $this->postJson('/api/v1/orders', $requestData, ['Idempotency-key' => 1])
             ->getStatusCode();
         self::assertEquals(422, $status);
     }
+
 
     public function validationProvider()
     {
@@ -86,9 +92,8 @@ class OrderTest extends TestCase
         ];
     }
 
-    public function testCreate()
+    public function testCreateSuccessfull()
     {
-        (new \MenuCategorySeeder())->run();
         $request = [
             'address' => 'Some adresss',
             'phone' => '+7955441112',
@@ -118,7 +123,6 @@ class OrderTest extends TestCase
         }
 
         self::assertEquals([
-            'id' => 1,
             'token' => $order->token,
             'address' => $order->address,
             'status' => $order->status,
@@ -128,9 +132,8 @@ class OrderTest extends TestCase
         ], $data['data']);
     }
 
-    public function testIdempotence()
+    public function testIdempotenceCreate()
     {
-        (new \MenuCategorySeeder())->run();
         $request = [
             'address' => 'Some adresss',
             'phone' => '+7955441112',
@@ -156,4 +159,82 @@ class OrderTest extends TestCase
 
         self::assertNotEquals($data['data'], $data3['data']);
     }
+
+    public function testOrderCancel()
+    {
+        $createResponse = $this->createOrder();
+
+        $cancelledResponse = $this->patchJson(
+            '/api/v1/orders/' . $createResponse['data']['token'],
+            ['status' => Order::STATUS_CANCELLED], ['Idempotency-key' => 555])
+            ->assertStatus(200)
+            ->json();
+
+        $createResponse['data']['status'] = Order::STATUS_CANCELLED;
+        self::assertEquals($createResponse['data'], $cancelledResponse['data']);
+    }
+
+    public function testOrderCancelNotFound()
+    {
+        $createResponse = $this->createOrder();
+
+        $this->patchJson(
+            '/api/v1/orders/' . $createResponse['data']['token'] . 'invalid',
+            ['status' => Order::STATUS_CANCELLED], ['Idempotency-key' => 555])
+            ->assertStatus(404);
+    }
+
+    public function testOrderCancelInvalidStatus()
+    {
+        $createResponse = $this->createOrder();
+
+        $this->patchJson(
+            '/api/v1/orders/' . $createResponse['data']['token'],
+            ['status' => Order::STATUS_DELIVERED], ['Idempotency-key' => 555])
+            ->assertStatus(422);
+    }
+
+    public function testOrderCancelInvalidStatusInDb()
+    {
+        $createResponse = $this->createOrder();
+        $order = Order::query()->where('token', '=', $createResponse['data']['token'])->first();
+        $order->status = Order::STATUS_APPROVED;
+        static::assertTrue($order->save());
+
+        $this->patchJson(
+            '/api/v1/orders/' . $createResponse['data']['token'],
+            ['status' => Order::STATUS_CANCELLED], ['Idempotency-key' => 555])
+            ->assertStatus(422);
+    }
+
+
+    public function testOrderView()
+    {
+        $createResponse = $this->createOrder();
+        $vewResponse = $this->get('/api/v1/orders/' . $createResponse['data']['token'])
+            ->assertStatus(200)
+            ->json();
+
+        self::assertEquals($createResponse['data'], $vewResponse['data']);
+    }
+
+    public function testOrderViewNotFound()
+    {
+        $token = $this->createOrder()['data']['token'];
+        $this->get('/api/v1/orders/' . $token . 'invalid')->assertStatus(404);
+    }
+
+
+    private function createOrder($idempotencyKey = 333)
+    {
+        return $this->postJson('/api/v1/orders', [
+            'address' => 'Some adresss',
+            'phone' => '+7955441112',
+            'positions' => [['id' => 1, 'count' => 1]]
+        ], ['Idempotency-key' => $idempotencyKey])
+            ->assertStatus(201)
+            ->json();
+    }
+
+
 }

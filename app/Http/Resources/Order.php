@@ -18,7 +18,6 @@ class Order extends JsonResource
         }
 
         return [
-            'id' => $this->id,
             'token' => $this->token,
             'address' => $this->address,
             'status' => $this->status,

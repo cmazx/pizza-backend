@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 
 class OrderService
 {
+    const TOKEN_LENGTH = 40;
     /**
      * @var \App\Services\CurrencyService
      */
@@ -24,9 +25,9 @@ class OrderService
         $this->currencyService = $currencyService;
     }
 
-    public function create(array $orderData, ?User $user)
+    public function create(array $orderData, ?User $user): Order
     {
-        $this->validate($orderData);
+        $this->validateCreate($orderData);
         $order = $this->buildOrder($orderData, $user);
         $positions = $this->buildOrderPositions($orderData);
 
@@ -42,7 +43,7 @@ class OrderService
         return $order;
     }
 
-    public function validate(array $orderData)
+    public function validateCreate(array $orderData)
     {
         Validator::make($orderData, [
             'address' => 'required|between:5,255',
@@ -60,12 +61,12 @@ class OrderService
         $order->phone = $orderData['phone'];
         $order->user_id = $user ? $user->id : null;
         $order->status = Order::STATUS_NEW;
-        $order->token = base64_encode(Str::random(40));
+        $order->token = base64_encode(Str::random(static::TOKEN_LENGTH));
 
         return $order;
     }
 
-    private function buildOrderPositions(array $orderData)
+    private function buildOrderPositions(array $orderData): array
     {
         $positions = [];
 
@@ -87,5 +88,59 @@ class OrderService
         }
 
         return $positions;
+    }
+
+    /**
+     * Currently only status change to cancelled supported
+     *
+     * @param string $token
+     * @param array $data
+     *
+     * @return \App\Order
+     */
+    public function updateByToken(string $token, array $data): Order
+    {
+        $this->validateToken($token);
+        Validator::make(['status' => $data['status'] ?? ''],
+            ['status' => 'required|in:' . Order::STATUS_CANCELLED,])->validate();
+        /**
+         * @var Order $order
+         */
+        $order = Order::query()->where('token', '=', $token)->first();
+        if (!$order) {
+            abort(404, 'Order not found.');
+        }
+        if ($order->status == Order::STATUS_CANCELLED) {
+            return $order;
+        }
+        if (!$order->isCancellable()) {
+            abort(422, json_encode(['message' => 'Order can not be cancelled', 'code' => 101]));
+        }
+
+
+        return $this->cancelOrder($order);
+    }
+
+    private function cancelOrder(Order $order): Order
+    {
+        $executed = DB::statement('UPDATE "orders" SET status=:s_to WHERE id=:id and status=:s_from', [
+            ':id' => $order->id,
+            ':s_to' => Order::STATUS_CANCELLED,
+            ':s_from' => $order->status
+        ]);
+        if (!$executed) {
+            abort(422, json_encode(['message' => 'Order can not be cancelled', 'code' => 101]));
+        }
+        $order->refresh();
+        if ($order->status != Order::STATUS_CANCELLED) {
+            abort(422, json_encode(['message' => 'Order can not be cancelled', 'code' => 101]));
+        }
+
+        return $order;
+    }
+
+    public function validateToken(string $token): void
+    {
+        Validator::make(['token' => $token], ['token' => 'required|string|between:40,255',])->validate();
     }
 }

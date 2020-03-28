@@ -33,5 +33,23 @@ class OrderController extends Controller
         return new Order($order);
     }
 
+    public function patch(string $token, Request $request, OrderService $orderService)
+    {
+        $order = $this->orderService->updateByToken($token, $request->json()->all());
+
+        return response()->json(['data' => new Order($order)]);
+    }
+
+    public function view(string $token, OrderService $orderService)
+    {
+        $orderService->validateToken($token);
+        $order = \App\Order::query()->where('token', '=', $token)->first();
+        if (!$order) {
+            abort(404, 'Order not  found');
+        }
+
+        return response()->json(['data' => new Order($order)]);
+    }
+
 
 }
