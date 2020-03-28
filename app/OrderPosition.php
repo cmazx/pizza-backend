@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class OrderPosition extends Model
 {
-    protected array $fillable = [
+    protected $fillable = [
         'position_id',
         'count',
         'name',
