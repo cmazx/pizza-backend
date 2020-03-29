@@ -15,7 +15,7 @@ class MenuPosition extends JsonResource
             'price' => $this->price,
             'description' => $this->description,
             'position' => $this->position,
-            'image' => URL::to('/images/' . $this->image . '.jpg'),
+            'image' => URL::to(config('constants.cdnUrl') . '/menu/' . $this->image . '.jpg'),
             'options' => MenuPositionOptionValue::collection($this->options)
         ];
     }
