@@ -48,7 +48,7 @@ class MenuCategorySeeder extends Seeder
                     $createList[] = [
                         'menu_category_id' => $category->id,
                         'name' => $posName,
-                        'image' => strtolower($category->name) . ($category->id % 3)
+                        'image' => strtolower($category->name) . random_int(1, 8)
                     ];
                 }
 
