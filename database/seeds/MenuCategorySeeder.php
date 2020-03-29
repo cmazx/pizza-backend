@@ -28,12 +28,21 @@ class MenuCategorySeeder extends Seeder
      */
     public function run()
     {
-        $option = factory(App\MenuPositionOption::class)->create(
+        $options = [];
+        $options['Pizza'] = factory(App\MenuPositionOption::class)->create(
             [
                 'name' => 'Size',
                 'values' => ['S', 'M', 'L', 'XL']
             ]
         )->refresh();
+        $options['Drinks'] = factory(App\MenuPositionOption::class)->create(
+            [
+                'name' => 'Volume',
+                'values' => ['0.3L', '0.8L', '1L']
+            ]
+        )->refresh();
+        $options['Starters'] = null;
+
 
         factory(MenuCategory::class)
             ->createMany([
@@ -41,29 +50,34 @@ class MenuCategorySeeder extends Seeder
                 ['name' => 'Drinks', 'description' => 'Icy drinks', 'position' => 1],
                 ['name' => 'Starters', 'description' => 'Cool starters', 'position' => 2]
             ])
-            ->each(function (MenuCategory $category) use ($option) {
+            ->each(function (MenuCategory $category) use ($options) {
+                $option = $options[$category->name];
 
                 $createList = [];
-                foreach (self::POSITIONS_NAMES[$category->name] as $posName) {
+                foreach (self::POSITIONS_NAMES[$category->name] as $key => $posName) {
                     $createList[] = [
                         'menu_category_id' => $category->id,
                         'name' => $posName,
-                        'image' => strtolower($category->name) . random_int(1, 8)
+                        'image' => strtolower($category->name) . (1 + ($key % 8))
                     ];
                 }
 
                 $positions = factory(MenuPosition::class)->createMany($createList);
                 $category->positions()->saveMany($positions);
 
-                $positions->each(function (MenuPosition $position) use ($option) {
-                    $position->options()->save(
-                        factory(App\MenuPositionOptionValue::class)->create([
-                            'menu_position_id' => $position->id,
-                            'menu_position_option_id' => $option->id,
-                            'value' => Collection::wrap($option->values)->random()
-                        ])
-                    );
-                });
+                if (isset($options[$category->name])) {
+                    $positions->each(function (MenuPosition $position) use ($option) {
+                        foreach ($option->values as $value) {
+                            $position->options()->save(
+                                factory(App\MenuPositionOptionValue::class)->create([
+                                    'menu_position_id' => $position->id,
+                                    'menu_position_option_id' => $option->id,
+                                    'value' => Collection::wrap($option->values)->random()
+                                ])
+                            );
+                        }
+                    });
+                }
 
             });
     }
