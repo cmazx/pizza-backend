@@ -18,3 +18,4 @@ Route::get('/categories/{category}/positions', 'Menu\CategoriesController@positi
 Route::post('/orders', 'Menu\OrderController@create');
 Route::patch('/orders/{token}', 'Menu\OrderController@patch');
 Route::get('/orders/{token}', 'Menu\OrderController@view');
+Route::get('/options', 'Menu\OptionsController@index');
