@@ -3,7 +3,6 @@
 use App\MenuCategory;
 use App\MenuPosition;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Collection;
 
 class MenuCategorySeeder extends Seeder
 {
@@ -72,7 +71,7 @@ class MenuCategorySeeder extends Seeder
                                 factory(App\MenuPositionOptionValue::class)->create([
                                     'menu_position_id' => $position->id,
                                     'menu_position_option_id' => $option->id,
-                                    'value' => Collection::wrap($option->values)->random()
+                                    'value' => $value
                                 ])
                             );
                         }
