@@ -23,6 +23,7 @@ class CreateMenuPositionsOptionsTable extends Migration
             $table->integer('menu_position_id')->index();
             $table->integer('menu_position_option_id');
             $table->string('value');
+            $table->decimal('price')->default(0);
 
             $table->foreign('menu_position_id', 'menu_position_option_values_position_id_fk')
                 ->references('id')

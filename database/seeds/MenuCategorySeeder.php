@@ -66,12 +66,13 @@ class MenuCategorySeeder extends Seeder
 
                 if (isset($options[$category->name])) {
                     $positions->each(function (MenuPosition $position) use ($option) {
-                        foreach ($option->values as $value) {
+                        foreach ($option->values as $key => $value) {
                             $position->options()->save(
                                 factory(App\MenuPositionOptionValue::class)->create([
                                     'menu_position_id' => $position->id,
                                     'menu_position_option_id' => $option->id,
-                                    'value' => $value
+                                    'value' => $value,
+                                    'price' => 1.1 * $key
                                 ])
                             );
                         }

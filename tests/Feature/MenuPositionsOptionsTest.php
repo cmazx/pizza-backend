@@ -22,7 +22,7 @@ class MenuPositionsOptionsTest extends TestCase
             ];
         }
         //category with positions check
-        $this->get('/api/v1/options')
+        $this->get('/api/v1/position-options')
             ->assertStatus(200)
             ->assertJson([
                 'data' => $expectedResponse

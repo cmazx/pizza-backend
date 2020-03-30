@@ -26,8 +26,7 @@ class MenuPositionsTest extends TestCase
 
         //category with positions check
         $this->get('/api/v1/categories/' . $firstCategory->id . '/positions')
-            ->assertStatus(200)
-            ->assertJson([
+            ->assertStatus(200)->assertJson([
                 'data' => $expectedData,
                 'meta' => [
                     'current_page' => 1,
@@ -52,7 +51,7 @@ class MenuPositionsTest extends TestCase
             ->sortBy('position')
             ->map(function (MenuPosition $position) {
                 $options = $position->options->map(function (MenuPositionOptionValue $value) {
-                    return ['option_id' => $value->menu_position_option_id, 'value' => $value->value];
+                    return ['option_id' => $value->menu_position_option_id, 'value' => $value->value, 'addPrice' => $value->price];
                 })->toArray();
 
                 return [
@@ -61,7 +60,7 @@ class MenuPositionsTest extends TestCase
                     'price' => $position->price,
                     'description' => $position->description,
                     'position' => $position->position,
-                    'image' => 'http://localhost/images/' . $position->image . '.jpg',
+                    'image' => '//mazx.ru/pizza/menu/' . $position->image . '.jpg',
                     'options' => $options
                 ];
             })->toArray();

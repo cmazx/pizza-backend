@@ -19,7 +19,9 @@ class MenuPositionSeeder extends Seeder
                 $position->options()->save(
                     factory(App\MenuPositionOptionValue::class)->make([
                         'menu_position_id' => $position->id,
-                        'menu_position_option_id' => $option->id
+                        'menu_position_option_id' => $option->id,
+                        'value' => 'L',
+                        'price' => 0
                     ])
                 );
             });

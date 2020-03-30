@@ -10,7 +10,8 @@ class MenuPositionOptionValue extends JsonResource
     {
         return [
             'option_id' => $this->menu_position_option_id,
-            'value' => $this->value
+            'value' => $this->value,
+            'addPrice' => $this->price
         ];
     }
 }
